@@ -1,69 +1,116 @@
 
-const users = [
-  { id: 1, name: "Anna", age: 22, city: "Moscow", isActive: true },
-  { id: 2, name: "Oleg", age: 17, city: "Kazan", isActive: false },
-  { id: 3, name: "Ivan", age: 30, city: "Moscow", isActive: true },
-  { id: 4, name: "Maria", age: 25, city: "Sochi", isActive: false }
-];
 
-//фильрация
-function getActiveUsers(users) {
-  return users.filter(user => user.isActive === true);
+let expenses = [];          
+let nextId = 1;            
+
+
+function addExpense(title, amount, category) {
+    if (!title || amount <= 0 || !category) {
+        console.log('Ошибка: проверьте название, сумму и категорию');
+        return;
+    }
+    const expense = {
+        id: nextId++,
+        title: title,
+        amount: amount,
+        category: category
+    };
+    expenses.push(expense);
+    console.log(`Добавлено: ${title} (${amount} руб.) - ${category}`);
 }
 
 
-const getUserNames = (users) => {
-  return users.map(user => user.name);
+function printAllExpenses() {
+    if (expenses.length === 0) {
+        console.log('Список расходов пуст');
+        return;
+    }
+    console.log(' Все расходы ');
+    expenses.forEach(exp => {
+        console.log(`${exp.id}: ${exp.title} | ${exp.amount} руб. | ${exp.category}`);
+    });
+}
+function getTotalAmount() {
+    const total = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+    console.log(`Общая сумма расходов: ${total} руб.`);
+    return total;
+}
+
+
+function getExpensesByCategory(category) {
+    const filtered = expenses.filter(exp => exp.category === category);
+    if (filtered.length === 0) {
+        console.log(`В категории "${category}" расходов нет`);
+        return [];
+    }
+    const total = filtered.reduce((sum, exp) => sum + exp.amount, 0);
+    console.log(`--- Расходы в категории "${category}" ---`);
+    filtered.forEach(exp => console.log(`${exp.title}: ${exp.amount} руб.`));
+    console.log(`Итого по категории: ${total} руб.`);
+    return filtered;
+}
+
+
+function findExpenseByTitle(search) {
+    const found = expenses.find(exp => exp.title.toLowerCase().includes(search.toLowerCase()));
+    if (found) {
+        console.log(`Найдено: ${found.title} (${found.amount} руб.) - ${found.category}`);
+    } else {
+        console.log(`Ничего не найдено по запросу "${search}"`);
+    }
+    return found;
+}
+
+
+function deleteExpenseById(id) {
+    const index = expenses.findIndex(exp => exp.id === id);
+    if (index === -1) {
+        console.log(`Расход с id=${id} не найден`);
+        return false;
+    }
+    const deleted = expenses.splice(index, 1)[0];
+    console.log(`Удалён расход: ${deleted.title}`);
+    return true;
+}
+
+
+function getCategoryStatistics() {
+    if (expenses.length === 0) {
+        console.log('Нет данных для статистики');
+        return;
+    }
+    const stats = {};
+    expenses.forEach(exp => {
+        if (!stats[exp.category]) {
+            stats[exp.category] = { count: 0, total: 0 };
+        }
+        stats[exp.category].count++;
+        stats[exp.category].total += exp.amount;
+    });
+    console.log('Статистика по категориям ');
+    for (let cat in stats) {
+        console.log(`${cat}: ${stats[cat].count} расход(ов) на ${stats[cat].total} руб.`);
+    }
+}
+
+
+const expenseTracker = {
+    addExpense,
+    printAllExpenses,
+    getTotalAmount,
+    getExpensesByCategory,
+    findExpenseByTitle,
+    deleteExpenseById,
+    getCategoryStatistics
 };
 
-// Поиск пользователя
-function findUserById(users, id) {
-  const foundUser = users.find(user => user.id === id);
-  return foundUser !== undefined ? foundUser : null;
-}
-
-// Подсчёт статистики
-function getUsersStatistics(users) {
-  const activeCount = users.filter(user => user.isActive === true).length;
-  const inactiveCount = users.filter(user => user.isActive === false).length;
-  
-  return {
-    total: users.length,
-    active: activeCount,
-    inactive: inactiveCount
-  };
-}
-
-//  Средний возраст
-function getAverageAge(users) {
-  if (users.length === 0) return 0;
-  
-  const sumAge = users.reduce((total, user) => total + user.age, 0);
-  return sumAge / users.length;
-}
-
-//  Дополнительный функционал программы
-function groupUsersByCity(users) {
-  return users.reduce((result, user) => {
-    const city = user.city;
-    
-   
-    if (!result[city]) {
-      result[city] = [];
-    }
-    
-
-    result[city].push(user);
-    
-    return result;
-  }, {});
-}
-
-
-console.log('Активные пользователи:', getActiveUsers(users));
-console.log('Имена пользователей:', getUserNames(users));
-console.log('Поиск пользователя с id 2:', findUserById(users, 2));
-console.log('Поиск пользователя с id 10:', findUserById(users, 10));
-console.log('Статистика:', getUsersStatistics(users));
-console.log('Средний возраст:', getAverageAge(users));
-console.log('Группировка по городам:', groupUsersByCity(users));
+expenseTracker.addExpense('Обед', 350, 'Еда');
+expenseTracker.addExpense('Такси', 500, 'Транспорт');
+expenseTracker.addExpense('Кофе', 120, 'Еда');
+expenseTracker.printAllExpenses();
+expenseTracker.getTotalAmount();
+expenseTracker.getExpensesByCategory('Еда');
+expenseTracker.findExpenseByTitle('кофе');
+expenseTracker.deleteExpenseById(2);
+expenseTracker.printAllExpenses();
+expenseTracker.getCategoryStatistics();
